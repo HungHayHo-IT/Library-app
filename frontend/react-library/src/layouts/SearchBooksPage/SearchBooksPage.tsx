@@ -2,16 +2,22 @@ import { useEffect, useState } from "react";
 import BookModel from "../../models/BookModels";
 import { SprinnerLoading } from "../Utils/SpinnerLoading";
 import { SearchBook } from "./components/SearchBook";
+import { Pagination } from "../Utils/Pagination";
 
 export const SearchBooksPage = () => {
     const [books, setBooks] = useState<BookModel[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [httpError, setHttpError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [booksPerPage] = useState(5); //quy dinh số lượng sách hiển thị trên một trang
+    const [totalAmountOfBooks, setTotalAmountOfBooks] = useState(0); //lưu Tổng số lượng sách có trong Database.
+    const [totalPages, setTotalPages] = useState(0); //lưu Tổng số trang có thể chia ra được.
+
 
     useEffect(() => {
         const fetchBooks = async () => {
             const baseUrl: string = "http://localhost:8082/api/books";
-            const url: string = `${baseUrl}?page=0&size=5`;
+            const url: string = `${baseUrl}?page=${currentPage - 1}&size=${booksPerPage}`;
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error("Something went wrong!");
@@ -19,6 +25,9 @@ export const SearchBooksPage = () => {
 
             const responseJson = await response.json();
             const responseData = responseJson._embedded.books;
+
+            setTotalAmountOfBooks(responseJson.page.totalElements); //lấy Tổng số lượng sách có trong Database.
+            setTotalPages(responseJson.page.totalPages); //lấy Tổng số trang có thể chia ra được.
 
             const loadedBooks: BookModel[] = [];
             for (const key in responseData) {
@@ -42,8 +51,8 @@ export const SearchBooksPage = () => {
             setHttpError(error.message);
         });
 
-
-    }, []);
+        window.scrollTo(0, 0); //khi chuyển sang trang mới thì scroll lên đầu trang
+    }, [currentPage]);
 
     if (isLoading) {
         return (
@@ -59,6 +68,10 @@ export const SearchBooksPage = () => {
         )
     }
 
+    const indexOfLastBook: number = currentPage * booksPerPage; //tính index của cuốn sách cuối cùng trên trang hiện tại
+    const indexOfFirstBook: number = indexOfLastBook - booksPerPage; //tính index của cuốn sách đầu tiên trên trang hiện tại
+    let lastItem = booksPerPage * currentPage <= totalAmountOfBooks ? booksPerPage * currentPage : totalAmountOfBooks; //tính index của cuốn sách cuối cùng trên trang hiện tại, nếu số lượng sách còn lại nhỏ hơn số lượng sách hiển thị trên một trang thì lấy index của cuốn sách cuối cùng là tổng số lượng sách có trong Database.
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber); //hàm thay đổi trang hiện tại
     return (
         <div>
             <div className='container'>
@@ -112,14 +125,17 @@ export const SearchBooksPage = () => {
                         </div>
                     </div>
                     <div className="mt-3">
-                        <h5>Number of results: (22)</h5>
+                        <h5>Number of results: ({totalAmountOfBooks})</h5>
                     </div>
                     <p>
-                        1 to 5 of 22 items:
+                        {indexOfFirstBook} to {lastItem} of {totalAmountOfBooks} items:
                     </p>
                     {books.map((book) => (
                         <SearchBook book={book} key={book.id} />
                     ))
+                    }
+                    {
+                        totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} paginate={paginate} />
                     }
                 </div>
             </div>
