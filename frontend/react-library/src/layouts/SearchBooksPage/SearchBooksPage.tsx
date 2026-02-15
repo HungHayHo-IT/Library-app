@@ -1,45 +1,51 @@
-import { useEffect, useState } from "react";
-import BookModel from "../../models/BookModels";
-import { SprinnerLoading } from "../Utils/SpinnerLoading";
-import { SearchBook } from "./components/SearchBook";
-import { Pagination } from "../Utils/Pagination";
+import { useEffect, useState } from 'react';
+
+import { Pagination } from '../Utils/Pagination';
+
+import { SearchBook } from './components/SearchBook';
+import BookModel from '../../models/BookModels';
+import { SprinnerLoading } from '../Utils/SpinnerLoading';
 
 export const SearchBooksPage = () => {
+
     const [books, setBooks] = useState<BookModel[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [httpError, setHttpError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [booksPerPage] = useState(5); //quy dinh số lượng sách hiển thị trên một trang
-    const [totalAmountOfBooks, setTotalAmountOfBooks] = useState(0); //lưu Tổng số lượng sách có trong Database.
-    const [totalPages, setTotalPages] = useState(0); //lưu Tổng số trang có thể chia ra được.
-    const [search, setSearch] = useState(""); //lưu giá trị của ô tìm kiếm
-    const [searchUrl, setSearchUrl] = useState(""); //lưu url tìm kiếm
+    const [booksPerPage] = useState(5);
+    const [totalAmountOfBooks, setTotalAmountOfBooks] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [search, setSearch] = useState('');
+    const [searchUrl, setSearchUrl] = useState('');
+    const [categorySelection, setCategorySelection] = useState('Book category');
 
     useEffect(() => {
         const fetchBooks = async () => {
-            const baseUrl: string = "http://localhost:8082/api/books";
-
+            const baseUrl: string = "http://localhost:8080/api/books";
 
             let url: string = '';
+
             if (searchUrl === '') {
-                url = `${baseUrl}?page=${currentPage - 1}&size=${booksPerPage}`;//nếu searchUrl rỗng thì lấy tất cả sách có trong Database và phân trang
+                url = `${baseUrl}?page=${currentPage - 1}&size=${booksPerPage}`;
             } else {
-                url = baseUrl + searchUrl;//nếu searchUrl không rỗng thì lấy sách theo searchUrl và phân trang
+                url = baseUrl + searchUrl;
             }
 
-
             const response = await fetch(url);
+
             if (!response.ok) {
-                throw new Error("Something went wrong!");
+                throw new Error('Something went wrong!');
             }
 
             const responseJson = await response.json();
+
             const responseData = responseJson._embedded.books;
 
-            setTotalAmountOfBooks(responseJson.page.totalElements); //lấy Tổng số lượng sách có trong Database.
-            setTotalPages(responseJson.page.totalPages); //lấy Tổng số trang có thể chia ra được.
+            setTotalAmountOfBooks(responseJson.page.totalElements);
+            setTotalPages(responseJson.page.totalPages);
 
             const loadedBooks: BookModel[] = [];
+
             for (const key in responseData) {
                 loadedBooks.push({
                     id: responseData[key].id,
@@ -49,7 +55,7 @@ export const SearchBooksPage = () => {
                     copies: responseData[key].copies,
                     copiesAvailable: responseData[key].copiesAvailable,
                     category: responseData[key].category,
-                    img: responseData[key].img
+                    img: responseData[key].img,
                 });
             }
 
@@ -59,9 +65,8 @@ export const SearchBooksPage = () => {
         fetchBooks().catch((error: any) => {
             setIsLoading(false);
             setHttpError(error.message);
-        });
-
-        window.scrollTo(0, 0); //khi chuyển sang trang mới thì scroll lên đầu trang
+        })
+        window.scrollTo(0, 0);
     }, [currentPage, searchUrl]);
 
     if (isLoading) {
@@ -72,7 +77,7 @@ export const SearchBooksPage = () => {
 
     if (httpError) {
         return (
-            <div className="container mt-5">
+            <div className='container m-5'>
                 <p>{httpError}</p>
             </div>
         )
@@ -82,15 +87,32 @@ export const SearchBooksPage = () => {
         if (search === '') {
             setSearchUrl('');
         } else {
-            setSearchUrl(`/search/finfByTitleContaining?title=${search}&page=0&size=${booksPerPage}`);
+            setSearchUrl(`/search/findByTitleContaining?title=${search}&page=0&size=${booksPerPage}`)
         }
     }
 
+    const categoryField = (value: string) => {
+        if (
+            value.toLowerCase() === 'fe' ||
+            value.toLowerCase() === 'be' ||
+            value.toLowerCase() === 'data' ||
+            value.toLowerCase() === 'devops'
+        ) {
+            setCategorySelection(value);
+            setSearchUrl(`/search/findByCategory?category=${value}&page=0&size=${booksPerPage}`)
+        } else {
+            setCategorySelection('All');
+            setSearchUrl(`?page=0&size=${booksPerPage}`)
+        }
+    }
 
-    const indexOfLastBook: number = currentPage * booksPerPage; //tính index của cuốn sách cuối cùng trên trang hiện tại
-    const indexOfFirstBook: number = indexOfLastBook - booksPerPage; //tính index của cuốn sách đầu tiên trên trang hiện tại
-    let lastItem = booksPerPage * currentPage <= totalAmountOfBooks ? booksPerPage * currentPage : totalAmountOfBooks; //tính index của cuốn sách cuối cùng trên trang hiện tại, nếu số lượng sách còn lại nhỏ hơn số lượng sách hiển thị trên một trang thì lấy index của cuốn sách cuối cùng là tổng số lượng sách có trong Database.
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber); //hàm thay đổi trang hiện tại
+    const indexOfLastBook: number = currentPage * booksPerPage;
+    const indexOfFirstBook: number = indexOfLastBook - booksPerPage;
+    let lastItem = booksPerPage * currentPage <= totalAmountOfBooks ?
+        booksPerPage * currentPage : totalAmountOfBooks;
+
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
     return (
         <div>
             <div className='container'>
@@ -100,11 +122,9 @@ export const SearchBooksPage = () => {
                             <div className='d-flex'>
                                 <input className='form-control me-2' type='search'
                                     placeholder='Search' aria-labelledby='Search'
-                                    onChange={(e) => setSearch(e.target.value)}
-
-                                />
-                                <button className='btn btn-outline-success' onClick={() => searchHandleChange()}
-                                >
+                                    onChange={e => setSearch(e.target.value)} />
+                                <button className='btn btn-outline-success'
+                                    onClick={() => searchHandleChange()}>
                                     Search
                                 </button>
                             </div>
@@ -114,30 +134,30 @@ export const SearchBooksPage = () => {
                                 <button className='btn btn-secondary dropdown-toggle' type='button'
                                     id='dropdownMenuButton1' data-bs-toggle='dropdown'
                                     aria-expanded='false'>
-                                    Category
+                                    {categorySelection}
                                 </button>
                                 <ul className='dropdown-menu' aria-labelledby='dropdownMenuButton1'>
-                                    <li >
+                                    <li onClick={() => categoryField('All')}>
                                         <a className='dropdown-item' href='#'>
                                             All
                                         </a>
                                     </li>
-                                    <li >
+                                    <li onClick={() => categoryField('FE')}>
                                         <a className='dropdown-item' href='#'>
                                             Front End
                                         </a>
                                     </li>
-                                    <li >
+                                    <li onClick={() => categoryField('BE')}>
                                         <a className='dropdown-item' href='#'>
                                             Back End
                                         </a>
                                     </li>
-                                    <li >
+                                    <li onClick={() => categoryField('Data')}>
                                         <a className='dropdown-item' href='#'>
                                             Data
                                         </a>
                                     </li>
-                                    <li >
+                                    <li onClick={() => categoryField('DevOps')}>
                                         <a className='dropdown-item' href='#'>
                                             DevOps
                                         </a>
@@ -146,22 +166,32 @@ export const SearchBooksPage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="mt-3">
-                        <h5>Number of results: ({totalAmountOfBooks})</h5>
-                    </div>
-                    <p>
-                        {indexOfFirstBook} to {lastItem} of {totalAmountOfBooks} items:
-                    </p>
-                    {books.map((book) => (
-                        <SearchBook book={book} key={book.id} />
-                    ))
+                    {totalAmountOfBooks > 0 ?
+                        <>
+                            <div className='mt-3'>
+                                <h5>Number of results: ({totalAmountOfBooks})</h5>
+                            </div>
+                            <p>
+                                {indexOfFirstBook + 1} to {lastItem} of {totalAmountOfBooks} items:
+                            </p>
+                            {books.map(book => (
+                                <SearchBook book={book} key={book.id} />
+                            ))}
+                        </>
+                        :
+                        <div className='m-5'>
+                            <h3>
+                                Can't find what you are looking for?
+                            </h3>
+                            <a type='button' className='btn main-color btn-md px-4 me-md-2 fw-bold text-white'
+                                href='#'>Library Services</a>
+                        </div>
                     }
-                    {
-                        totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} paginate={paginate} />
+                    {totalPages > 1 &&
+                        <Pagination currentPage={currentPage} totalPages={totalPages} paginate={paginate} />
                     }
                 </div>
             </div>
         </div>
-    )
-
+    );
 }
