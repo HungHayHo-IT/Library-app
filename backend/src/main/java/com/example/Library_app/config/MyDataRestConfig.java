@@ -1,6 +1,7 @@
 package com.example.Library_app.config;
 
 import com.example.Library_app.entity.Book;
+import com.example.Library_app.entity.Review;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -24,13 +25,16 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
         };
 
         config.exposeIdsFor(Book.class);// yeu cau spring data rest hien thi khoa chinh cua entity trong ket qua json
+        config.exposeIdsFor(Review.class);
+
         disableHttpMethods(Book.class,config,theUnsupportedActions);
+        disableHttpMethods(Review.class,config,theUnsupportedActions);
         // configure cors mapping
         cors.addMapping(config.getBasePath()+"/**")
                 .allowedOrigins(theAllowedOrigins);
     }
 
-    private void disableHttpMethods(Class<Book> theClass, RepositoryRestConfiguration config, HttpMethod[] theUnsupportedActions) {
+    private void disableHttpMethods(Class<?> theClass, RepositoryRestConfiguration config, HttpMethod[] theUnsupportedActions) {
         config.getExposureConfiguration()
                 .forDomainType(theClass) // ap dung cho class book
                 .withItemExposure(((metdata, httpMethods) ->httpMethods.disable(theUnsupportedActions) ))

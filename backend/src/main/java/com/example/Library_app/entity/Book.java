@@ -35,4 +35,6 @@ public class Book {
     // SỬA Ở ĐÂY: Thêm columnDefinition = "MEDIUMTEXT" hoặc "TEXT"
     @Column(name = "img", columnDefinition = "MEDIUMTEXT")
     private String img;
+
+
 }
