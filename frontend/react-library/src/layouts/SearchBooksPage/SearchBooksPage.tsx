@@ -26,7 +26,9 @@ export const SearchBooksPage = () => {
             if (searchUrl === '') {
                 url = `${baseUrl}?page=${currentPage - 1}&size=${booksPerPage}`;//nếu searchUrl rỗng thì lấy tất cả sách có trong Database và phân trang
             } else {
+                let searchWithPageNumber = searchUrl.replace('<pageNumber>', (currentPage - 1).toString()); //thay thế <pageNumber> bằng số trang hiện tại - 1 vì page bắt đầu từ 0
                 url = baseUrl + searchUrl;//nếu searchUrl không rỗng thì lấy sách theo searchUrl và phân trang
+
             }
 
 
@@ -81,14 +83,18 @@ export const SearchBooksPage = () => {
     }
 
     const searchHandleChange = () => {
+        setCurrentPage(1); //khi tìm kiếm thì chuyển về trang đầu tiên
         if (search === '') {
             setSearchUrl('');
         } else {
-            setSearchUrl(`/search/findByTitleContaining?title=${search}&page=0&size=${booksPerPage}`);
+            setSearchUrl(`/search/findByTitleContaining?title=${search}&page=<pageNumber>&size=${booksPerPage}`);
         }
+        setCategorySelection('All'); //khi tìm kiếm thì reset dropdown category về All
     }
 
     const categoryField = (value: string) => {
+        setCurrentPage(1); //khi chọn category thì chuyển về trang đầu tiên
+
         if (
             value.toLowerCase() === 'fe' ||
             value.toLowerCase() === 'be' ||
@@ -96,7 +102,7 @@ export const SearchBooksPage = () => {
             value.toLowerCase() === 'devops'
         ) {
             setCategorySelection(value);
-            setSearchUrl(`/search/findByCategory?category=${value}&page=0&size=${booksPerPage}`);
+            setSearchUrl(`/search/findByCategory?category=${value}&page=<pageNumber>&size=${booksPerPage}`);
         } else {
             setCategorySelection('All');
             setSearchUrl(`?page=0&size=${booksPerPage}`);
