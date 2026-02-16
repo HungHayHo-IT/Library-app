@@ -19,7 +19,8 @@ public class Book {
     @Column(name = "author")
     private String author;
 
-    @Column(name = "description")
+    // SỬA Ở ĐÂY: Thêm columnDefinition = "TEXT"
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "copies")
@@ -31,7 +32,7 @@ public class Book {
     @Column(name = "category")
     private String category;
 
-    @Column(name = "img")
+    // SỬA Ở ĐÂY: Thêm columnDefinition = "MEDIUMTEXT" hoặc "TEXT"
+    @Column(name = "img", columnDefinition = "MEDIUMTEXT")
     private String img;
 }
-
