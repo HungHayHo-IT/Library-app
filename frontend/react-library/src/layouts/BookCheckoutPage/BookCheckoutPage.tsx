@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import BookModel from "../../models/BookModels";
 import { SprinnerLoading } from "../Utils/SpinnerLoading";
+import { StarsReview } from "../Utils/StarsReview";
+import { CheckoutAndReviewBox } from "./CheckoutAndReviewBox";
 
 export const BookCheckoutPage = () => {
 
@@ -8,7 +10,7 @@ export const BookCheckoutPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [httpError, setHttpError] = useState(null);
 
-    const bookId = window.location.pathname.split("/checkout/")[2];
+    const bookId = window.location.pathname.split("/checkout/")[1];
     useEffect(() => {
         const fetchBook = async () => {
             const baseUrl: string = `http://localhost:8082/api/books/${bookId}`;
@@ -73,10 +75,11 @@ export const BookCheckoutPage = () => {
                             <h2>{book?.title}</h2>
                             <h5 className='text-primary'>{book?.author}</h5>
                             <p className='lead'>{book?.description}</p>
+                            <StarsReview rating={4} size={32} />
 
                         </div>
                     </div>
-
+                    <CheckoutAndReviewBox book={book} mobile={false} />
                 </div>
                 <hr />
 
@@ -95,10 +98,10 @@ export const BookCheckoutPage = () => {
                         <h2>{book?.title}</h2>
                         <h5 className='text-primary'>{book?.author}</h5>
                         <p className='lead'>{book?.description}</p>
-
+                        <StarsReview rating={4.5} size={32} />
                     </div>
                 </div>
-
+                <CheckoutAndReviewBox book={book} mobile={true} />
             </div>
         </div>
     )
