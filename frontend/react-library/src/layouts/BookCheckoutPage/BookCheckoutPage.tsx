@@ -19,8 +19,7 @@ export const BookCheckoutPage = () => {
             }
 
             const responseJson = await response.json();
-            const responseData = responseJson._embedded.books;
-
+            const responseData = responseJson;
             const loadedBooks: BookModel = {
                 id: responseData.id,
                 title: responseData.title,
