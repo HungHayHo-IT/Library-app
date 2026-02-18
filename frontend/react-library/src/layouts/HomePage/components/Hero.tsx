@@ -76,3 +76,7 @@ export const Heros = () => {
         </div>
     );
 }
+
+function useOktaAuth(): { authState: any; } {
+    throw new Error("Function not implemented.");
+}
